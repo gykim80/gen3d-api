@@ -31,7 +31,10 @@ hy3d() {
   $P setuptools wheel ninja pybind11
   export PATH=$V/bin:$PATH
   (cd hy3dpaint/custom_rasterizer && $P --no-build-isolation -e .)
-  (cd hy3dpaint/DifferentiableRenderer && bash compile_mesh_painter.sh)
+  # 공식 compile_mesh_painter.sh 는 시스템 python3-config 를 써서 확장자 접미사가 어긋난다 → venv 파이썬 기준으로 빌드
+  (cd hy3dpaint/DifferentiableRenderer && SUF=$($V/bin/python -c 'import sysconfig;print(sysconfig.get_config_var("EXT_SUFFIX"))') \
+    && c++ -O3 -Wall -shared -std=c++11 -fPIC $($V/bin/python -m pybind11 --includes) mesh_inpaint_processor.cpp \
+       -o mesh_inpaint_processor$SUF)
   mkdir -p hy3dpaint/ckpt
   [ -f hy3dpaint/ckpt/RealESRGAN_x4plus.pth ] || wget -q https://github.com/xinntao/Real-ESRGAN/releases/download/v0.1.0/RealESRGAN_x4plus.pth -P hy3dpaint/ckpt
   $V/bin/python -c "from huggingface_hub import snapshot_download as s; s('tencent/Hunyuan3D-2.1')"

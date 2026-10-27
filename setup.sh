@@ -43,7 +43,9 @@ hyworld() {
   uv venv -q --clear --seed --managed-python -p 3.11 $V
   P="uv pip install -q --python $V/bin/python"
   $P torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
-  $P -r requirements.txt
+  # cupy==13.6.0 은 소스 빌드라 수십 분 걸린다 → CUDA 12 휠로 바꾼다
+  sed 's/^cupy==/cupy-cuda12x==/' requirements.txt > /tmp/hyworld-req.txt
+  $P -r /tmp/hyworld-req.txt
   # WorldMirror 서브폴더만 받는다(HY-Pano-2.0 80B 는 단일 GPU 로 못 돌린다)
   $V/bin/python -c "from huggingface_hub import snapshot_download as s; s('tencent/HY-World-2.0', allow_patterns=['HY-WorldMirror-2.0/*'])"
 }

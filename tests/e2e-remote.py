@@ -4,7 +4,7 @@
 import json, os, subprocess, sys, time
 
 API = f"https://{open(os.path.expanduser('~/.gen3d-api-pod')).read().strip()}-8000.proxy.runpod.net"
-AUTH = "Authorization: Bearer " + open(os.path.expanduser("~/.gen3d-api-token")).read().strip()
+AUTH = "Authorization: Bearer " + (os.environ.get("GEN3D_API_KEY") or open(os.path.expanduser("~/.gen3d-api-token")).read().strip())
 OUT = os.path.expanduser("~/Desktop/ondo/output/gen3d")
 RAW = "https://raw.githubusercontent.com"
 WM = f"{RAW}/Tencent-Hunyuan/HY-World-2.0/main/examples/worldrecon/realistic/Building"

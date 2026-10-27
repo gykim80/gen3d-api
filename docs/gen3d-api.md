@@ -23,17 +23,22 @@ TripoSplat(MIT)·PartLLM(Apache-2.0)은 제약이 없다.
 
 ## 배포
 
+코드는 GitHub 저장소 [gykim80/gen3d-api](https://github.com/gykim80/gen3d-api)(public, 비밀값 없음)로 배포한다.
+pod 는 부팅할 때 이 저장소를 clone 하고, 갱신은 `git push` 후 pod 에서 `git pull` 한다.
+
 ```bash
-python3 deploy.py create   # pod 생성 — 부팅하면 코드를 풀고 게이트웨이를 띄운 뒤 모델을 설치
+python3 deploy.py create   # pod 생성 — 부팅하면 저장소 clone → 게이트웨이 → 모델 설치
 python3 deploy.py status   # 설치 진행(ready 목록 · GPU · 로그 꼬리)
-python3 deploy.py push     # 코드만 갱신 + 게이트웨이 재시작
+python3 deploy.py push     # git push → pod 에서 git pull + 게이트웨이 재시작
 python3 deploy.py sh "nvidia-smi"
+python3 deploy.py sh "cd /workspace/app && setsid nohup bash setup.sh hy3d hunyuan3d-2.1 &"   # 모델 하나만 재설치
+python3 tests/e2e-remote.py triposplat   # 실제 GPU 추론 + 결과 다운로드(~/Desktop/ondo/output/gen3d)
 ```
 
-- 토큰은 `~/.gen3d-api-token`, pod ID 는 `~/.gen3d-api-pod` 에 저장된다(저장소 밖)
+- 토큰은 `~/.gen3d-api-token`, pod ID 는 `~/.gen3d-api-pod` 에 저장된다(저장소 밖). 토큰은 pod 환경변수로만 전달
 - 설치 순서: TripoSplat(수 분) → Hunyuan3D·WorldMirror·PartLLM 병렬(PartLLM 은 flash-attn 컴파일로 가장 오래 걸림)
 - `/workspace` 는 250GB 볼륨이라 pod 를 재시작해도 설치본이 남고, 이미 설치된 모델은 건너뛴다
-- 사내망(판교)에서는 외부 업로드 차단 정책에 걸려 `create`/`push` 가 막힌다 → 업로드가 허용되는 망에서 실행
+- 원격 E2E 는 공개 예제 이미지 URL 과 `job://` 참조만 쓰므로 이 PC 에서 올리는 파일이 없다
 
 ## API
 
@@ -44,7 +49,7 @@ RunPod 프록시는 100초 제한이 있어 모든 생성은 **비동기 잡**�
 |---|---|---|
 | GET | `/health` | 인증 없음 · 큐 길이 |
 | GET | `/v1/models` | 모델별 설치 완료(`ready`) · 메모리 상주(`loaded`) |
-| POST | `/v1/jobs/{model}` | multipart `files`(여러 개 가능) 또는 `urls`(JSON 배열) + `params`(JSON) |
+| POST | `/v1/jobs/{model}` | multipart `files`(여러 개 가능) 또는 `urls`(JSON 배열, `job://<잡id>/<파일>` 로 이전 결과 재사용) + `params`(JSON) |
 | GET | `/v1/jobs/{id}` | `queued`/`running`/`succeeded`/`failed`, 결과 `urls` |
 | GET | `/v1/jobs/{id}/files/{name}` | 결과 파일 다운로드 |
 

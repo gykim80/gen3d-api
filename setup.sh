@@ -64,7 +64,10 @@ partllm() {
 install() {  # install <함수> <모델 이름>
   [ -f $W/ready/$2 ] && return 0
   # set -e — 중간 단계가 실패하면 바로 멈춰 첫 에러가 로그 끝에 남는다
-  ( set -e; $1 ) > $W/logs/install-$2.log 2>&1 && touch $W/ready/$2 || echo "INSTALL FAILED: $2" >> $W/logs/install-$2.log
+  #   && · || 문맥 안에서는 bash 가 set -e 를 무시하므로 종료 코드를 따로 받는다
+  ( set -e; $1 ) > $W/logs/install-$2.log 2>&1
+  local rc=$?
+  if [ $rc -eq 0 ]; then touch $W/ready/$2; else echo "INSTALL FAILED: $2 (exit $rc)" >> $W/logs/install-$2.log; fi
 }
 
 # bash setup.sh <함수> <모델 이름> — 모델 하나만 다시 설치

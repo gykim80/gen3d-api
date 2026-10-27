@@ -13,9 +13,22 @@ def load():
         apply_fix()
     except Exception:  # noqa: BLE001
         pass
+    import types
+
+    import trimesh
     from hy3dshape.pipelines import Hunyuan3DDiTFlowMatchingPipeline
     from hy3dshape.rembg import BackgroundRemover
+
+    # bpy(Blender) 는 obj→glb 변환에만 쓰이는데 python 3.10 휠이 없다 → 빈 모듈로 import 를 통과시키고 trimesh 로 변환
+    sys.modules.setdefault("bpy", types.ModuleType("bpy"))
+    import textureGenPipeline
     from textureGenPipeline import Hunyuan3DPaintConfig, Hunyuan3DPaintPipeline
+
+    def obj_to_glb(obj_path, glb_path, *_, **__):
+        trimesh.load(obj_path, force="mesh").export(glb_path)
+        return True
+
+    textureGenPipeline.convert_obj_to_glb = obj_to_glb
 
     shape = Hunyuan3DDiTFlowMatchingPipeline.from_pretrained("tencent/Hunyuan3D-2.1")
     conf = Hunyuan3DPaintConfig(6, 512)

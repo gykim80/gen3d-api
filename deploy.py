@@ -59,7 +59,10 @@ RESTART = "cd /workspace/app && git pull -q && bash restart-gateway.sh"
 
 
 def push():
-    subprocess.run(["git", "-C", D, "push", "-q", "origin", "main"], check=True)
+    # gh 활성 계정이 다른 계정일 수 있어 저장소 소유 계정(gykim80) 토큰으로 push 한다
+    tok = subprocess.run(["gh", "auth", "token", "-u", "gykim80"], capture_output=True, text=True, check=True).stdout.strip()
+    subprocess.run(["git", "-C", D, "push", "-q", f"https://gykim80:{tok}@github.com/gykim80/gen3d-api.git", "main"],
+                   check=True)
     print(ops(RESTART))
 
 

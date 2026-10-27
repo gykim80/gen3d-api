@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>gen3d 결과 갤러리</title>
+  <script type="importmap">
+    { "imports": {
+      "three": "/vendor/three.module.js",
+      "three/addons/": "/vendor/addons/",
+      "@sparkjsdev/spark": "/vendor/spark.module.js"
+    } }
+  </script>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header class="top">
+    <div>
+      <h1>gen3d 결과 갤러리</h1>
+      <p class="sub" id="summary">불러오는 중…</p>
+    </div>
+    <nav class="chips" id="filters" aria-label="모델 필터"></nav>
+  </header>
+
+  <main>
+    <ul class="grid" id="grid" aria-live="polite"></ul>
+    <p class="empty" id="empty" hidden>표시할 결과가 없습니다. 결과 폴더: ~/Desktop/ondo/output/gen3d</p>
+  </main>
+
+  <dialog id="detail" aria-labelledby="d-title">
+    <div class="stage">
+      <canvas id="view" tabindex="0" aria-label="3D 뷰 — 드래그로 회전, 휠·핀치로 확대, 오른쪽 드래그로 이동"></canvas>
+      <div class="loading" id="loading" role="status">불러오는 중…</div>
+      <div class="toolbar" role="toolbar" aria-label="보기 도구">
+        <button data-act="zoom-in" title="확대 (+)" aria-label="확대">＋</button>
+        <button data-act="zoom-out" title="축소 (−)" aria-label="축소">－</button>
+        <button data-act="rotate" aria-pressed="true" title="자동 회전 (Space)">자동 회전</button>
+        <button data-act="reset" title="시점 초기화 (R)">초기화</button>
+        <button data-act="wire" aria-pressed="false" title="와이어프레임 (W)">와이어</button>
+        <button data-act="bg" title="배경 밝기 (B)">배경</button>
+        <button data-act="full" title="전체 화면 (F)">전체 화면</button>
+      </div>
+      <p class="hint">드래그: 회전 · 휠/핀치: 확대 · 오른쪽 드래그/두 손가락: 이동 · ←/→ 이전·다음</p>
+    </div>
+    <aside class="panel">
+      <div class="panel-head">
+        <h2 id="d-title"></h2>
+        <button class="close" data-act="close" aria-label="닫기 (Esc)">✕</button>
+      </div>
+      <p class="meta" id="d-meta"></p>
+      <section>
+        <h3>파일</h3>
+        <ul class="files" id="d-files"></ul>
+      </section>
+      <section id="d-parts-sec" hidden>
+        <h3>부위 <label class="switch"><input type="checkbox" id="d-parts-on" /> 부위 색으로 보기</label></h3>
+        <ul class="parts" id="d-parts"></ul>
+      </section>
+      <section id="d-images-sec" hidden>
+        <h3>텍스처</h3>
+        <ul class="images" id="d-images"></ul>
+      </section>
+      <div class="nav">
+        <button data-act="prev">← 이전</button>
+        <button data-act="next">다음 →</button>
+      </div>
+    </aside>
+  </dialog>
+
+  <dialog id="lightbox" aria-label="이미지 확대 보기">
+    <img id="lb-img" alt="" />
+    <p class="hint">휠/핀치: 확대 · 드래그: 이동 · 더블클릭: 원래 크기 · Esc: 닫기</p>
+  </dialog>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

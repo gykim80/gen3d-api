@@ -73,6 +73,22 @@ curl -O $API/v1/jobs/ab12…/files/textured.glb -H "$H"
 curl -X POST $API/v1/jobs/partllm -H "$H" -F 'urls=["https://…/shape.glb"]' -F 'params={"mode":"text_guided","part_names":["seat","back","leg"]}'
 ```
 
+## 결과 갤러리
+
+내려받은 결과(`~/Desktop/ondo/output/gen3d`)를 썸네일 그리드로 보고, 클릭하면 3D로 돌려 보고 확대한다.
+
+```bash
+python3 gallery/serve.py      # → http://127.0.0.1:8787 (이 PC 안에서만 열림)
+```
+
+- 썸네일: 처음 열 때 브라우저가 대표 파일을 렌더해 결과 폴더에 `.thumb.png` 로 저장하고, 다음부터는 바로 띄운다
+- 지원 형식: 텍스처 메시 `.glb`, 메시·점군 `.ply`, Gaussian splat `.ply`·`.splat`
+- 조작: 드래그 회전, 휠·핀치 확대, 오른쪽 드래그·두 손가락 이동, 툴바(확대·축소·자동 회전·초기화·와이어·배경·전체 화면)
+- 단축키: `+`/`-` 확대·축소, `Space` 자동 회전, `R` 초기화, `W` 와이어, `B` 배경, `F` 전체 화면, `←`/`→` 이전·다음, `Esc` 닫기
+- PartLLM 결과: "부위 색으로 보기"를 켜면 부위마다 다른 색으로 겹쳐 보고, 부위별로 켜고 끈다
+- Hunyuan3D 텍스처(색·금속·거칠기)는 이미지로 띄워 휠·핀치로 확대한다
+- three.js 0.180 과 Spark 2.4 는 `gallery/vendor` 에 포함돼 있어 인터넷 없이 동작한다
+
 ## 구조
 
 - 게이트웨이(`gateway.py`): 인증, 잡 저장(`/workspace/jobs/<id>`), GPU 큐 1개

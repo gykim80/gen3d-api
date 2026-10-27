@@ -28,7 +28,8 @@ hy3d() {
   $P -r /tmp/hy3d-req.txt
   # bpy 는 obj→glb 변환 보조용 — 휠이 없으면 건너뛴다
   $P "bpy==4.0.0" || echo "bpy skipped"
-  $P setuptools wheel ninja pybind11
+  # lightning_fabric 이 pkg_resources 를 쓴다 — setuptools 80+ 에서 빠졌다
+  $P "setuptools<70" wheel ninja pybind11
   export PATH=$V/bin:$PATH
   (cd hy3dpaint/custom_rasterizer && $P --no-build-isolation -e .)
   # 공식 compile_mesh_painter.sh 는 시스템 python3-config 를 써서 확장자 접미사가 어긋난다 → venv 파이썬 기준으로 빌드

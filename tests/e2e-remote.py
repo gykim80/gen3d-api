@@ -15,7 +15,9 @@ CASES = {
     "hunyuan3d-2.1": ([f"{RAW}/Tencent-Hunyuan/Hunyuan3D-2.1/main/assets/demo.png"], {"texture": True}),
     "worldmirror-2.0": ([f"{WM}/frame_{i:04d}.png" for i in range(5)], {}),
     # partllm 은 직전 hunyuan 결과 메시를 쓴다
-    "partllm": (None, {"mode": "full_shape", "prompt_set": "general"}),
+    # 같은 실행에 hunyuan 결과가 있으면 그 메시를, 없으면 Khronos 공개 샘플 의자를 분할한다
+    "partllm": ([f"{RAW}/KhronosGroup/glTF-Sample-Assets/main/Models/SheenChair/glTF-Binary/SheenChair.glb"],
+                {"mode": "full_shape", "prompt_set": "general"}),
 }
 
 
@@ -47,9 +49,7 @@ if __name__ == "__main__":
     last_mesh = None
     for m in sys.argv[1:] or list(CASES):
         urls, params = CASES[m]
-        if m == "partllm":
-            if not last_mesh:
-                print("partllm: needs a hunyuan3d-2.1 job in the same run"); continue
+        if m == "partllm" and last_mesh:
             urls = [last_mesh]
         j = run(m, urls, params)
         if m == "hunyuan3d-2.1" and j and j["status"] == "succeeded":

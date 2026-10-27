@@ -1,5 +1,5 @@
 # 러너 공통 루프 — 모델을 한 번 로드해 두고 stdin 잡을 하나씩 처리한다(라이브러리 print 는 stderr 로 돌린다)
-import json, os, sys, traceback
+import json, os, re, sys, traceback
 
 _proto = os.fdopen(os.dup(1), "w", buffering=1)
 os.dup2(2, 1)
@@ -28,7 +28,8 @@ def collect(out_dir, exts):
         for n in names:
             if n.lower().endswith(exts):
                 src = os.path.join(root, n)
-                rel = os.path.relpath(src, out_dir).replace(os.sep, "__")
+                # 파트 이름에 공백 등이 들어가므로 URL 에 안전한 문자만 남긴다
+                rel = re.sub(r"[^A-Za-z0-9._-]", "_", os.path.relpath(src, out_dir).replace(os.sep, "__"))
                 dst = os.path.join(out_dir, rel)
                 if src != dst:
                     os.replace(src, dst)

@@ -117,7 +117,15 @@ async def create_job(model: str, files: List[UploadFile] = File(None), urls: str
         inputs.append(p)
     for i, u in enumerate(json.loads(urls)):
         p = f"{d}/{i}_{os.path.basename(u.split('?')[0]) or 'input'}"
-        urllib.request.urlretrieve(u, p)
+        if u.startswith("job://"):
+            # 이전 잡 결과를 그대로 다음 모델 입력으로(예: job://<id>/shape.glb → partllm)
+            src_id, name = u[6:].split("/", 1)
+            src = f"{JOBS_DIR}/{os.path.basename(src_id)}/out/{os.path.basename(name)}"
+            if not os.path.isfile(src):
+                raise HTTPException(404, f"no such job output: {u}")
+            shutil.copy(src, p)
+        else:
+            urllib.request.urlretrieve(u, p)
         inputs.append(p)
     if not inputs:
         raise HTTPException(400, "files or urls required")

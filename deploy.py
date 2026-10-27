@@ -55,8 +55,9 @@ def create():
         print(str(pod)[:500])
 
 
-RESTART = ("cd /workspace/app && git pull -q && (pgrep -f 'uvicorn gateway' | xargs -r kill); sleep 1; "
-           "(pgrep -f runners/ | xargs -r kill); "
+# [u]·[a-z] 패턴은 이 명령을 실행 중인 셸 자신이 pgrep 에 걸리지 않게 한다
+RESTART = ("cd /workspace/app && git pull -q && (pgrep -f '[u]vicorn gateway' | xargs -r kill); sleep 1; "
+           "(pgrep -f 'runners/[a-z]' | xargs -r kill); "
            "(nohup python3 -m uvicorn gateway:app --host 0.0.0.0 --port 8000 > /workspace/logs/gateway.log 2>&1 &); "
            "git log -1 --oneline")
 

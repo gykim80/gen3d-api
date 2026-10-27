@@ -25,6 +25,12 @@ MODELS = {
                         "desc": "multi-view images/video → points.ply + gaussians.ply + depth/normal/camera"},
     "partllm": {"py": f"{W}/venvs/partllm/bin/python", "runner": "partllm.py", "input": "mesh",
                 "desc": "mesh → part segmentation (colored mesh + per-part ply)"},
+    "unirig": {"py": f"{W}/venvs/unirig/bin/python", "runner": "unirig.py", "input": "mesh",
+               "desc": "mesh → auto rig: skeleton + skinning merged into rigged.glb"},
+    "unimate": {"py": f"{W}/venvs/unimate/bin/python", "runner": "unimate.py", "input": "rigged mesh",
+                "desc": "rigged mesh + text prompt → animation baked into the mesh (animated .glb)"},
+    "kimodo": {"py": f"{W}/venvs/kimodo/bin/python", "runner": "kimodo.py", "input": "text",
+               "desc": "text prompt → human motion on SOMA skeleton (.bvh + .npz, 30 fps)"},
 }
 
 jobs: dict = {}
@@ -224,8 +230,11 @@ def create_job(model: str, files: List[UploadFile] = File(None), urls: str = For
             else:
                 fetch_url(u, dst)
             inputs.append(dst)
-        if not inputs:
+        # 텍스트 전용 모델(kimodo)은 params.prompt 만으로 돈다
+        if not inputs and MODELS[model]["input"] != "text":
             err(400, "no_input", "files or urls required")
+        if MODELS[model]["input"] == "text" and not str(prm.get("prompt", "")).strip():
+            err(400, "invalid_request", "params.prompt is required")
     except HTTPException:
         shutil.rmtree(f"{JOBS_DIR}/{jid}", ignore_errors=True)
         raise

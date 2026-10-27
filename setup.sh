@@ -12,7 +12,7 @@ triposplat() {
   V=$W/venvs/triposplat
   cd $W/repos && { [ -d TripoSplat ] || git clone -q https://github.com/VAST-AI-Research/TripoSplat; } && cd TripoSplat
   # 이미지 기본 torch 2.8(cu128) 를 그대로 쓴다
-  uv venv -q --system-site-packages -p $SYS_PY $V
+  uv venv -q --clear --system-site-packages -p $SYS_PY $V
   uv pip install -q --python $V/bin/python numpy safetensors pillow tqdm "huggingface_hub[cli]"
   $V/bin/hf download VAST-AI/TripoSplat --local-dir ckpts
 }
@@ -21,11 +21,13 @@ hy3d() {
   V=$W/venvs/hy3d
   cd $W/repos && { [ -d Hunyuan3D-2.1 ] || git clone -q https://github.com/Tencent-Hunyuan/Hunyuan3D-2.1; } && cd Hunyuan3D-2.1
   # bpy==4.0 은 python 3.10 휠만 있다
-  uv venv -q --seed -p 3.10 $V
+  uv venv -q --clear --seed --managed-python -p 3.10 $V
   P="uv pip install -q --python $V/bin/python"
   $P torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu124
-  grep -v -E "extra-index-url|gradio" requirements.txt > /tmp/hy3d-req.txt
+  grep -v -E "extra-index-url|gradio|^bpy" requirements.txt > /tmp/hy3d-req.txt
   $P -r /tmp/hy3d-req.txt
+  # bpy 는 obj→glb 변환 보조용 — 휠이 없으면 건너뛴다
+  $P "bpy==4.0.0" || echo "bpy skipped"
   $P setuptools wheel ninja pybind11
   export PATH=$V/bin:$PATH
   (cd hy3dpaint/custom_rasterizer && $P --no-build-isolation -e .)
@@ -38,7 +40,7 @@ hy3d() {
 hyworld() {
   V=$W/venvs/hyworld
   cd $W/repos && { [ -d HY-World-2.0 ] || git clone -q https://github.com/Tencent-Hunyuan/HY-World-2.0; } && cd HY-World-2.0
-  uv venv -q --seed -p 3.11 $V
+  uv venv -q --clear --seed --managed-python -p 3.11 $V
   P="uv pip install -q --python $V/bin/python"
   $P torch==2.7.1 torchvision==0.22.1 --index-url https://download.pytorch.org/whl/cu128
   $P -r requirements.txt
@@ -49,7 +51,7 @@ hyworld() {
 partllm() {
   V=$W/venvs/partllm
   cd $W/repos && { [ -d PartLLM ] || git clone -q https://github.com/czvvd/PartLLM; } && cd PartLLM
-  uv venv -q --seed -p 3.11 $V
+  uv venv -q --clear --seed --managed-python -p 3.11 $V
   . $V/bin/activate
   bash scripts/install.sh
   pip install -q "huggingface_hub[cli]"
@@ -59,8 +61,16 @@ partllm() {
 
 install() {  # install <함수> <모델 이름>
   [ -f $W/ready/$2 ] && return 0
-  ( $1 ) > $W/logs/install-$2.log 2>&1 && touch $W/ready/$2 || echo "INSTALL FAILED: $2" >> $W/logs/install-$2.log
+  # set -e — 중간 단계가 실패하면 바로 멈춰 첫 에러가 로그 끝에 남는다
+  ( set -e; $1 ) > $W/logs/install-$2.log 2>&1 && touch $W/ready/$2 || echo "INSTALL FAILED: $2" >> $W/logs/install-$2.log
 }
+
+# bash setup.sh <함수> <모델 이름> — 모델 하나만 다시 설치
+if [ -n "$2" ]; then
+  rm -f $W/ready/$2
+  install $1 $2
+  exit
+fi
 
 apt-get update -qq && apt-get install -y -qq ffmpeg libgl1 libglib2.0-0 libxrender1 libxi6 libxkbcommon0 libsm6 > /dev/null
 install triposplat triposplat

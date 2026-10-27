@@ -25,6 +25,7 @@ API 키(외부 호출자용)
 테스트·확인
   ./run.sh smoke                   로컬 스모크 테스트(GPU 불필요 · 키/인증/분리 검증)
   ./run.sh test [모델 ...]         실제 pod 에서 모델별 E2E(결과 → ~/Desktop/ondo/output/gen3d)
+  ./run.sh spec                    연동 명세서의 Python 예시를 live API 로 실행(GEN3D_API_KEY 필요)
   ./run.sh gallery [포트]          결과 갤러리 http://127.0.0.1:8787
 
 문서: docs/api-integration-spec.md (연동 명세서) · docs/gen3d-api.md (운영)
@@ -44,6 +45,11 @@ case "${1:-help}" in
     V=${TMPDIR:-/tmp}/gen3d-smoke-venv
     [ -x $V/bin/uvicorn ] || { $PY -m venv $V && $V/bin/pip install -q fastapi uvicorn python-multipart; }
     PATH=$V/bin:$PATH bash tests/smoke-local.sh ;;
+  spec)
+    V=${TMPDIR:-/tmp}/gen3d-smoke-venv
+    [ -x $V/bin/python ] || $PY -m venv $V
+    $V/bin/pip install -q requests truststore
+    $V/bin/python tests/check-spec-example.py ;;
   gallery) shift; $PY gallery/serve.py "${1:-8787}" ;;
   help|-h|--help) usage ;;
   *) echo "알 수 없는 명령: $1"; echo; usage; exit 1 ;;

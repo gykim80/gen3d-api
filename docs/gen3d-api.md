@@ -1,5 +1,7 @@
 # gen3d-api — 이미지·영상 → 3D 생성 API
 
+> 외부 호출자용 연동 명세는 [api-integration-spec.md](api-integration-spec.md). 실행은 프로젝트 루트 `./run.sh help`.
+
 GPU pod 한 대(H100/A100 80GB)에서 4개 모델을 하나의 HTTP API로 외부에 노출한다.
 모델마다 torch 버전이 달라 venv 를 분리하고, 게이트웨이가 GPU 큐 하나로 순서대로 돌린다.
 
